@@ -4,21 +4,6 @@ sys.path.append('/path/to/Endpoints')
 #from Endpoint import Endpoint
 from RequestHandler import RequestHandler, UrlBuilder, ResponseChecker
 
-'''
-class SummonerEndpoint(Endpoint):
-    def __init__(self, url, **kwargs):
-        new_url = f"/summoner/v4/summoners{url}"
-        super().__init__(new_url, **kwargs)
-
-
-class SummonerApiUrls:
-    by_account = SummonerEndpoint("/by-account/{encrypted_account_id}")
-    by_name = SummonerEndpoint("/by-name/{summoner_name}")
-    by_puuid = SummonerEndpoint("/by-puuid/{encrypted_puuid}")
-    by_id = SummonerEndpoint("/{encrypted_summoner_id}")
-'''
-    
-
 class SummonerApi:
     def __init__(self, region, api_key):
         self.region = region
