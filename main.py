@@ -10,7 +10,7 @@ api_key = 'RGAPI-d502fbf0-f23e-4d41-a963-1b2638cbe04d'
 euw1_api = RiotWrapper(api_key, 'euw1')
 
 # Get the summoner data for the given summoner name
-puuid = euw1_api.summoner.by_name('S1two')['puuid']
+puuid = euw1_api.summoner.by_name('randyboii')['puuid']
 
 test1 = '2023-01-01'
 
