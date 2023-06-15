@@ -19,7 +19,7 @@ class MatchApi:
     
     def by_puuid_matchlist(
             self, 
-            puuid, # oui bonjour voilà la def  
+            puuid: str,
             startTime: datetime = None, 
             count: int = None, 
             gameType: str='ranked'):
