@@ -3,7 +3,7 @@
   <em>Riot API made easy</em>
 </p>
 
-🚀 **Features**<br /><br />
+🚀 **Features**<br />
 RiotWrapper is a Python library with a number of classes designed to facilitate interactions with the Riot Games API. Here's what it can do:
 
 *RiotWrapper*: Your primary interface with the API. Initializes essential details like the API key, region, and debug mode.
@@ -16,7 +16,7 @@ RiotWrapper is a Python library with a number of classes designed to facilitate 
 
 *MatchApi* and *SummonerApi*: Enable querying of match and player informations.<br /><br />
 
-🛠️**Usage**<br /><br /> 
+🛠️ **Usage**<br />
 Here's a quick start guide to get you up and running:
 
 
@@ -30,3 +30,19 @@ Here's a quick start guide to get you up and running:
 
     # Fetch player details by their name
     summoner_info = rw.summoner.by_name(summoner_name="your_summoner_name")
+<br/>  
+
+⌛ **Future improvements**<br/>
+
+*Implementing all other endpoints for LoL:*
+
+- Champion-v3
+- Account-v1
+- Champion Mastery-v4
+
+*Refining actual endpoints :*
+
+- Summoner-v4
+- Match-v5
+
+*Add Handling HTTP exceptions and pip install package* 
