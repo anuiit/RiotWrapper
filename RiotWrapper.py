@@ -5,7 +5,8 @@ from RequestHandler import UrlBuilder
 from RequestHandler import ResponseChecker
 
 class RiotWrapper:
-    def __init__(self, api_key, region):
+    def __init__(self, api_key, region, debug=False):
         self.api_key = api_key
-        self.summoner = SummonerApi(region, api_key)
-        self.match = MatchApi(region, api_key)
+        self.debug = debug
+        self.summoner = SummonerApi(region, api_key, debug)
+        self.match = MatchApi(region, api_key, debug)

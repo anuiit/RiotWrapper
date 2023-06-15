@@ -40,31 +40,22 @@ class ResponseChecker:
             raise Exception(f'Request to {response.url} failed with status code {response.status_code}')
 
 
-# A class for making requests
-class RequestService:
-    # Constructor
-    def __init__(self, api_key):
-        self.api_key = api_key
-
-    # Method for making a request to a given URL
-    def make_request(self, url):
-        headers = {'X-Riot-Token': self.api_key}
-        response = requests.get(url, headers=headers)
-        return response
-
-
 # A class for handling requests
 class RequestHandler:
     # Constructor
-    def __init__(self, api_key, url_builder, response_checker):
+    def __init__(self, api_key, url_builder, response_checker, debug):
         self.api_key = api_key
         self.url_builder = url_builder
         self.response_checker = response_checker
+        self.debug = debug
 
     # Method for making a request to a given endpoint
     def make_request(self, endpoint):
         url = self.url_builder.build(endpoint)
         headers = {'X-Riot-Token': self.api_key}
         response = requests.get(url, headers=headers)
+        if self.debug:
+            print(f"URL REQUEST : {url}{headers}")
+
         self.response_checker.check(response)
         return response.json()

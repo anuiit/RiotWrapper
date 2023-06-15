@@ -5,11 +5,11 @@ sys.path.append('/path/to/Endpoints')
 from RequestHandler import RequestHandler, UrlBuilder, ResponseChecker
 
 class SummonerApi:
-    def __init__(self, region, api_key):
+    def __init__(self, region, api_key, debug):
         self.region = region
         self.api_key = api_key
         self.url_builder = UrlBuilder(region)
-        self.request_handler = RequestHandler(api_key, self.url_builder, ResponseChecker)
+        self.request_handler = RequestHandler(api_key, self.url_builder, ResponseChecker, debug)
 
     def by_account(self, encrypted_account_id):
         endpoint = f"/lol/summoner/v4/summoners//by-account/{encrypted_account_id}"

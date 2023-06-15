@@ -2,11 +2,12 @@ from RequestHandler import RequestHandler, UrlBuilder, ResponseChecker
 from datetime import date, datetime
 
 class MatchApi:
-    def __init__(self, region, api_key):
+    def __init__(self, region, api_key, debug):
         self.region = region
         self.api_key = api_key
+        self.debug = debug
         self.url_builder = UrlBuilder(region, use_platform=True)
-        self.request_handler = RequestHandler(api_key, self.url_builder, ResponseChecker)
+        self.request_handler = RequestHandler(api_key, self.url_builder, ResponseChecker, debug)
 
     def by_match_id(self, match_id):
         endpoint = f"/lol/match/v5/matches/{match_id}"
@@ -18,28 +19,27 @@ class MatchApi:
     
     def by_puuid_matchlist(
             self, 
-            puuid, 
+            puuid, # oui bonjour voilà la def  
             startTime: datetime = None, 
             count: int = None, 
             gameType: str='ranked'):
         
         endpoint = f"/lol/match/v5/matches/by-puuid/{puuid}/ids"
-        params = []
+        params = {}
         
         if startTime is not None:
-            startTime = datetime.fromisoformat(startTime).date()
-            delta = date.today() - startTime
-            # convert to seconds
+            delta = date.today() - datetime.fromisoformat(startTime).date()
             delta = int(delta.total_seconds())
-            params.append(f"startTime={delta}")
+            params['startTime'] = delta
 
         if count is not None:
-            params.append(f"count={count}")
+            params['count'] = count
 
         if gameType is not None:
-            params.append(f"type={gameType}")
+            params['type'] = gameType
 
         if params:
-            endpoint += "?" + "&".join(params)
+            query_params = '&'.join([f"{k}={v}" for k, v in params.items()])
+            endpoint += f"?{query_params}"
 
         return self.request_handler.make_request(endpoint)
