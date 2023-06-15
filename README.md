@@ -3,7 +3,7 @@
   <em>Riot API made easy</em>
 </p>
 
-🚀 **Features**<br />
+🚀 **Features**<br>
 RiotWrapper is a Python library with a number of classes designed to facilitate interactions with the Riot Games API. Here's what it can do:
 
 *RiotWrapper*: Your primary interface with the API. Initializes essential details like the API key, region, and debug mode.
@@ -14,10 +14,11 @@ RiotWrapper is a Python library with a number of classes designed to facilitate 
 
 *ResponseChecker*: Checks the status of responses, raising an exception if the response is not ​200.
 
-*MatchApi* and *SummonerApi*: Enable querying of match and player informations.<br /><br />
+*MatchApi* and *SummonerApi*: Enable querying of match and player informations.<br><br>
 
-🛠️ **Usage**<br />
-Here's a quick start guide to get you up and running:
+🛠️ **Usage**<br>
+For the moment you can use __main.py__ to start off but this will disappear at some point.
+Or here's a quick start guide to get you up and running:
 
 
     from RiotWrapper import RiotWrapper
@@ -45,4 +46,7 @@ Here's a quick start guide to get you up and running:
 - Summoner-v4
 - Match-v5
 
-*Add Handling HTTP exceptions and pip install package* 
+*Random stuff :*
+
+- Add Handling HTTP exceptions 
+- Add pip support
