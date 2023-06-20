@@ -1,4 +1,4 @@
-from RequestHandler import RequestHandler, UrlBuilder, ResponseChecker
+from RequestHandler import RequestHandler, UrlBuilder
 from datetime import date, datetime
 
 # TODO
@@ -13,15 +13,18 @@ class MatchApi:
         self.api_key = api_key
         self.debug = debug
         self.url_builder = UrlBuilder(region, use_platform=True)
-        self.request_handler = RequestHandler(api_key, self.url_builder, ResponseChecker, debug)
+        self.endpoints = {
+            'by_match_id': '/lol/match/v5/matches/{}',
+            'by_match_id_timeline': '/lol/match/v5/matches/{}/timeline',
+            'by_puuid_matchlist': '/lol/match/v5/matches/by-puuid/{}/ids'
+        }
+        self.request_handler = RequestHandler(api_key, self.url_builder, self.endpoints, debug)
 
     def by_match_id(self, match_id):
-        endpoint = f"/lol/match/v5/matches/{match_id}"
-        return self.request_handler.make_request(endpoint)
+        return self.request_handler.make_request('by_match_id', match_id)
 
     def by_match_id_timeline(self, match_id):
-        endpoint = f"/lol/match/v5/matches/{match_id}/timeline"
-        return self.request_handler.make_request(endpoint)
+        return self.request_handler.make_request('by_match_id_timeline', match_id)
     
 
     # TODO 
@@ -31,27 +34,21 @@ class MatchApi:
     def by_puuid_matchlist(
             self, 
             puuid: str,
-            startTime: datetime = None, 
+            startTime: datetime = None,
+            endTime: datetime = None,
+            queue: int = None,          # https://static.developer.riotgames.com/docs/lol/queues.json
+            type: str='ranked',          # ranked, normal, tourney, tutorial
+            start: int = None,
             count: int = None,
-            gameType: str='ranked'):
+        ):
         
-        endpoint = f"/lol/match/v5/matches/by-puuid/{puuid}/ids"
         params = {}
-        
-        if startTime is not None:
-            # correct ou pas correct ? imo correct
-            params['startTime'] = int(date.today() - datetime.fromisoformat(startTime).date()).total_seconds()
-            # delta = int(delta.total_seconds())
-            # params['startTime'] = delta
 
-        if count is not None:
-            params['count'] = count
+        for key, value in locals().items():
+            if value is not None:
+                if key == 'startTime' or key == 'endTime':
+                    params[key] = int(date.today() - datetime.fromisoformat(value).date()).total_seconds()
+                else:
+                    params[key] = value
 
-        if gameType is not None:
-            params['type'] = gameType
-
-        if params:
-            query_params = '&'.join([f"{k}={v}" for k, v in params.items()])
-            endpoint += f"?{query_params}"
-
-        return self.request_handler.make_request(endpoint)
+        return self.request_handler.make_request('by_puuid_matchlist', puuid, query_params=params)
