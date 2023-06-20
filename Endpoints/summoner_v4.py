@@ -1,5 +1,16 @@
 from RequestHandler import RequestHandler, UrlBuilder, ResponseChecker
 
+# TODO
+
+# Faire une classe API ? 
+# Pour la passer en child sur les endpoints de l'api
+# ex SummonerApi devient SummonerApi(Api?)
+# avec seulement(debug)?
+# puisque la région serait choisie par la classe Api? directement
+# et du coup il resterait rien ? en __init__? 
+# Puisque region, key, url et requestHandler
+# serait gérés par la classe Api directement 
+
 class SummonerApi:
     def __init__(self, region, api_key, debug):
         self.region = region

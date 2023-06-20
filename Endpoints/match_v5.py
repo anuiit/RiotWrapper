@@ -1,6 +1,12 @@
 from RequestHandler import RequestHandler, UrlBuilder, ResponseChecker
 from datetime import date, datetime
 
+# TODO
+
+# Move the URLS from the API ex: lol/match/v5/matces...
+# to an enum class ?
+# En gros le bouger autrement c'est pas très propre là
+
 class MatchApi:
     def __init__(self, region, api_key, debug):
         self.region = region
@@ -17,20 +23,26 @@ class MatchApi:
         endpoint = f"/lol/match/v5/matches/{match_id}/timeline"
         return self.request_handler.make_request(endpoint)
     
+
+    # TODO 
+    # 
+    # Change headers parameters like gameType, count etc to be processed w/o
+    # using if statements
     def by_puuid_matchlist(
             self, 
             puuid: str,
             startTime: datetime = None, 
-            count: int = None, 
+            count: int = None,
             gameType: str='ranked'):
         
         endpoint = f"/lol/match/v5/matches/by-puuid/{puuid}/ids"
         params = {}
         
         if startTime is not None:
-            delta = date.today() - datetime.fromisoformat(startTime).date()
-            delta = int(delta.total_seconds())
-            params['startTime'] = delta
+            # correct ou pas correct ? imo correct
+            params['startTime'] = int(date.today() - datetime.fromisoformat(startTime).date()).total_seconds()
+            # delta = int(delta.total_seconds())
+            # params['startTime'] = delta
 
         if count is not None:
             params['count'] = count
