@@ -40,13 +40,14 @@ class RequestHandler:
         self.url_builder = url_builder
         self.response_checker = response_checker
         self.debug = debug
+        self.session = requests.Session()
 
     def make_request(self, endpoint):
         url = self.url_builder.build(endpoint)
         headers = {'X-Riot-Token': self.api_key}
-        response = requests.get(url, headers=headers)
-        if self.debug:
-            print(f"URL REQUEST : {url}{headers}")
+        response = self.session.get(url, headers=headers)
+
+        if self.debug: print(f"URL REQUEST : {url}{headers}")
 
         self.response_checker.check(response)
         return response.json()

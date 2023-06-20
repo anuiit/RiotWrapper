@@ -3,41 +3,26 @@ import logging
 
 #logging.basicConfig(level=logging.DEBUG)
 
-api_key = 'RGAPI-d502fbf0-f23e-4d41-a963-1b2638cbe04d'
+api_key = 'RGAPI-557a5c66-be5f-4a92-80ac-5d509825c761'
 
 euw1_api = RiotWrapper(api_key, 'euw1', debug=False)
 
-puuid = euw1_api.summoner.by_name('randyboii')['puuid']
+summoner = euw1_api.summoner
+match = euw1_api.match
+
+puuid = summoner.by_name('randyboii')['puuid']
 
 
-history = euw1_api.match.by_puuid_matchlist(puuid, count=100)
+history = match.by_puuid_matchlist(puuid, count=10)
 print(history)
-test = euw1_api.match.by_match_id(history[0])
-
-
-game_info = {
-                'match_id': test['metadata']['matchId'],
-                'game_creation': test,
-                'game_mode': test['info']['gameMode'],
-                'game_duration': test['info']['gameDuration'],
-                #'game_outcome': 'win' if self.get_champion_win(test, puuid) else 'loss'
-            }
-
-wins = losses = 0
 
 for game in history:
-    game_info = euw1_api.match.by_match_id(game)
-    participants = game_info['metadata']['participants']
+    participants = match.by_match_id(game)['metadata']['participants']
+    position = participants.index(puuid)
 
-    if puuid in participants:
-        participant_win = test['info']['participants'][participants.index(puuid)]['win']
-        participant_win = 'win' if participant_win else 'loss'
+    participant_win = match.by_match_id(game)['info']['participants'][position]['win']
+    participant_champ = match.by_match_id(game)['info']['participants'][participants.index(puuid)]['championName']
+    participant_win = 'win' if participant_win else 'loss'
 
-        if participant_win == 'win':
-            wins += 1
-        else:
-            losses += 1
-
-print(f'wins: {wins}, losses: {losses}')
-print(f'winrate: {wins / (wins + losses)}')
+    print(participant_win, participant_champ)
 
