@@ -7,3 +7,6 @@ class RiotWrapper:
         self.debug = debug
         self.summoner = SummonerApi(region, api_key, debug)
         self.match = MatchApi(region, api_key, debug)
+
+    # get winrate ?
+    # general functions to get stats ?
