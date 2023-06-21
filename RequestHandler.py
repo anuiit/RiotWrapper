@@ -43,6 +43,8 @@ class RequestException(Exception):
         self.url = url
         self.status_code = status_code
 
+# TODO
+# Implement a better rate limiter using the X-App-Rate-Limit-Count header
 
 class ResponseChecker:
     @staticmethod
