@@ -1,4 +1,8 @@
 import requests, time
+from collections import deque
+from requests.exceptions import HTTPError
+import logging
+logging.basicConfig(level=logging.INFO)
 
 class UrlBuilder:
     REGION_TO_PLATFORM = {
@@ -27,28 +31,27 @@ class UrlBuilder:
         url = base_url + endpoint
 
         if query_params:
-            url += f"?{self.build_query_params(query_params)}"
+            url += f"?{self.__build_query_params(query_params)}"
+            print(url)
         return url
 
-    def build_query_params(self, params):
+    def __build_query_params(self, params):
         query_params = []
         for key, value in params.items():
             query_params.append(f"{key}={value}")
         return '&'.join(query_params)
 
 
-class RequestException(Exception):
-    def __init__(self, message, url=None, status_code=None):
-        super().__init__(message)
-        self.url = url
-        self.status_code = status_code
-
-# TODO
-# Implement a better rate limiter using the X-App-Rate-Limit-Count header
-
 class ResponseChecker:
     @staticmethod
-    def check(response, max_retries=5):
+    def __log_response(response, result, backoff_time, retries):
+        logging.info(f"Response status code: {response.status_code}")
+        logging.info(f"Response result: {result}")
+        logging.info(f"Response backoff_time: {backoff_time}")
+        logging.info(f"Response retries: {retries}")
+
+    @staticmethod
+    def check(response, max_retries=5, debug=False):
         handlers = {
             429: ResponseChecker.__handle_429,
             400: ResponseChecker.__handle_error,
@@ -65,18 +68,21 @@ class ResponseChecker:
         while retries < max_retries:
             handler = handlers.get(response.status_code, ResponseChecker.__handle_ok)
             result = handler(response, backoff_time)
-            print(f"Response status code : {response.status_code}")
-            print(f"Response result : {result}")
-            print(f"Response backoff_time : {backoff_time}")
-            print(f"Response retries : {retries}")
 
-            if result is not None:
+            if debug:
+                ResponseChecker.__log_response(response, result, backoff_time, retries)
+            
+            if result is False:
+                backoff_time *= 2
+                retries += 1
+                return False
+            elif result is not None:
                 backoff_time *= 2
                 retries += 1
             else:
                 return True
 
-        raise RequestException(f'Request failed after {max_retries} retries')
+        raise HTTPError(f'Request failed with status {response.status_code} after {max_retries} retries')
 
     @staticmethod
     def __handle_ok(response, backoff_time):
@@ -84,17 +90,19 @@ class ResponseChecker:
 
     @staticmethod
     def __handle_429(response, backoff_time):
-        retry_after = int(response.headers.get('Retry-After', 60))
-        for i in range(retry_after, 0, -1):
-            time.sleep(1)
-            print(f"\rToo many requests, retrying in {i-1} seconds...", end="")
-        print()
+        retry_after = int(response.headers.get('Retry-After', backoff_time))
+        ResponseChecker.__wait(retry_after)
         return False
 
+    @staticmethod
+    def __wait(seconds):
+        for i in range(seconds, 0, -1):
+            time.sleep(1)
+            print(f"\rToo many requests, retrying in {i-1} seconds...", end='')
 
     @staticmethod
     def __handle_error(response, backoff_time):
-        raise RequestException(f'Request to {response.url} failed with status code {response.status_code}')
+        raise HTTPError(f'Request to {response.url} failed with status code {response.status_code}')
 
 
 class RequestHandler:
@@ -102,20 +110,22 @@ class RequestHandler:
         self.api_key = api_key
         self.url_builder = url_builder
         self.endpoints = endpoints
-        self.response_checker = ResponseChecker
         self.debug = debug
         self.session = requests.Session()
 
     def make_request(self, endpoint, *args, query_params=None):
         endpoint = self.endpoints[endpoint].format(*args)
         url = self.url_builder.build(endpoint, query_params=query_params)
-
         headers = {'X-Riot-Token': self.api_key}
-        response = self.session.get(url, headers=headers)
 
-        if self.debug: print(f"URL REQUEST : {url}{headers}")
-        
-        if self.response_checker.check(response):
-            return response.json()
-        else:
-            return self.make_request(endpoint, *args, query_params=query_params)
+        while True:
+            response = self.session.get(url, headers=headers)
+            check_result = ResponseChecker.check(response, debug=self.debug)
+
+            if check_result:
+                return response.json()
+            elif check_result is False:
+                if self.debug: print(f'\nRetrying after 429 error: {str(response.status_code)}, \nurl : {url}, \nheaders : {headers}, \nresponse : {response.json()}')
+                continue
+            else:
+                raise HTTPError(f"Request to {url} failed with status code {response.status_code}", url, response.status_code)
