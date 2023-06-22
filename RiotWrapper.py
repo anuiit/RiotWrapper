@@ -10,3 +10,8 @@ class RiotWrapper:
 
     # get winrate ?
     # general functions to get stats ?
+    # get games played with count ?
+    # stats by champion ?
+    # stats by role ?
+    # average stats ?
+    # random games picked ?

@@ -1,54 +1,43 @@
 from RequestHandler import RequestHandler, UrlBuilder
-from datetime import date, datetime
+from datetime import datetime
 
-# TODO
-
-# Move the URLS from the API ex: lol/match/v5/matces...
-# to an enum class ?
-# En gros le bouger autrement c'est pas très propre là
 
 class MatchApi:
+    ENDPOINTS = {
+        'BY_MATCH_ID': '/lol/match/v5/matches/{}',
+        'BY_MATCH_ID_TIMELINE': '/lol/match/v5/matches/{}/timeline',
+        'BY_PUUID_MATCHLIST': '/lol/match/v5/matches/by-puuid/{}/ids'
+    }
+
     def __init__(self, region, api_key, debug):
         self.region = region
         self.api_key = api_key
         self.debug = debug
         self.url_builder = UrlBuilder(region, use_platform=True)
-        self.endpoints = {
-            'by_match_id': '/lol/match/v5/matches/{}',
-            'by_match_id_timeline': '/lol/match/v5/matches/{}/timeline',
-            'by_puuid_matchlist': '/lol/match/v5/matches/by-puuid/{}/ids'
-        }
-        self.request_handler = RequestHandler(api_key, self.url_builder, self.endpoints, debug)
+        self.request_handler = RequestHandler(api_key, self.url_builder, self.ENDPOINTS, debug)
 
     def by_match_id(self, match_id):
-        return self.request_handler.make_request('by_match_id', match_id)
+        return self.request_handler.make_request(self.ENDPOINTS['BY_MATCH_ID'].format(match_id))
 
     def by_match_id_timeline(self, match_id):
-        return self.request_handler.make_request('by_match_id_timeline', match_id)
-    
+        return self.request_handler.make_request(self.ENDPOINTS['BY_MATCH_ID_TIMELINE'].format(match_id)) 
 
-    # TODO 
-    # 
-    # Change headers parameters like gameType, count etc to be processed w/o
-    # using if statements
     def by_puuid_matchlist(
-            self, 
-            puuid: str,
-            startTime: datetime = None,
-            endTime: datetime = None,
-            queue: int = None,          # https://static.developer.riotgames.com/docs/lol/queues.json
-            type: str='ranked',          # ranked, normal, tourney, tutorial
-            start: int = None,
-            count: int = None,
-        ):
-        
-        params = {}
+        self, 
+        puuid: str,
+        startTime: datetime = None,
+        endTime: datetime = None,   
+        queue: int = None,          # https://static.developer.riotgames.com/docs/lol/queues.json
+        type: str = 'ranked',       # ranked, normal, tourney, tutorial
+        start: int = None,
+        count: int = None,
+    ):
+        query_params = {k: v for k, v in locals().items() if v is not None}
 
-        for key, value in locals().items():
-            if value is not None:
-                if key == 'startTime' or key == 'endTime':
-                    params[key] = int(date.today() - datetime.fromisoformat(value).date()).total_seconds()
-                else:
-                    params[key] = value
+        if startTime:
+            query_params['startTime'] = int((datetime.now() - datetime.fromisoformat(query_params['startTime'])).total_seconds())
+        if endTime:
+            query_params['endTime'] = int((datetime.now() - datetime.fromisoformat(query_params['startTime'])).total_seconds())
 
-        return self.request_handler.make_request('by_puuid_matchlist', puuid, query_params=params)
+        return self.request_handler.make_request(self.ENDPOINTS['BY_PUUID_MATCHLIST'].format(puuid), query_params=query_params)
+

@@ -1,7 +1,8 @@
-import requests, time
-from collections import deque
+import requests, requests_cache, time
 from requests.exceptions import HTTPError
 import logging
+from urllib.parse import urlencode
+
 logging.basicConfig(level=logging.INFO)
 
 class UrlBuilder:
@@ -31,90 +32,81 @@ class UrlBuilder:
         url = base_url + endpoint
 
         if query_params:
-            url += f"?{self.__build_query_params(query_params)}"
+            url += '?' + urlencode(query_params)
             print(url)
         return url
 
-    def __build_query_params(self, params):
-        query_params = []
-        for key, value in params.items():
-            query_params.append(f"{key}={value}")
-        return '&'.join(query_params)
+
+class CustomHTTPError(HTTPError):
+    def __init__(self, response):
+        super().__init__(f'Request to {response.url} failed with status code {response.status_code}. Details: {response.text}')
 
 
 class ResponseChecker:
     @staticmethod
-    def __log_response(response, result, backoff_time, retries):
+    def __log_response(response, result, retry_after, retries):
         logging.info(f"Response status code: {response.status_code}")
         logging.info(f"Response result: {result}")
-        logging.info(f"Response backoff_time: {backoff_time}")
+        logging.info(f"Response retry_after: {retry_after}")
         logging.info(f"Response retries: {retries}")
 
     @staticmethod
     def check(response, max_retries=5, debug=False):
         handlers = {
-            429: ResponseChecker.__handle_429,
-            400: ResponseChecker.__handle_error,
-            401: ResponseChecker.__handle_error,
-            403: ResponseChecker.__handle_error,
-            404: ResponseChecker.__handle_error,
-            500: ResponseChecker.__handle_error,
-            503: ResponseChecker.__handle_error,
+            200: ResponseChecker.__handle_ok,
+            429: ResponseChecker.__handle_429
         }
 
         retries = 0
-        backoff_time = 60
+        retry_after = 10
 
-        while retries < max_retries:
-            handler = handlers.get(response.status_code, ResponseChecker.__handle_ok)
-            result = handler(response, backoff_time)
+        for retries in range(max_retries):
+            handler = handlers.get(response.status_code, ResponseChecker.__raise_http_error)
+            result = handler(response, retry_after)
 
             if debug:
-                ResponseChecker.__log_response(response, result, backoff_time, retries)
+                ResponseChecker.__log_response(response, result, retry_after, retries)
             
-            if result is False:
-                backoff_time *= 2
-                retries += 1
-                return False
-            elif result is not None:
-                backoff_time *= 2
-                retries += 1
+            if result or not result:
+                return result
             else:
-                return True
+                retries += 1
+                retry_after *= 2
+                ResponseChecker.__wait(retry_after)
 
-        raise HTTPError(f'Request failed with status {response.status_code} after {max_retries} retries')
-
-    @staticmethod
-    def __handle_ok(response, backoff_time):
-        return None
+        raise CustomHTTPError(response)
 
     @staticmethod
-    def __handle_429(response, backoff_time):
-        retry_after = int(response.headers.get('Retry-After', backoff_time))
+    def __handle_ok(response, retry_after):
+        return True
+
+    @staticmethod
+    def __handle_429(response, retry_after):
+        retry_after = int(response.headers.get('Retry-After', retry_after))
         ResponseChecker.__wait(retry_after)
         return False
 
     @staticmethod
-    def __wait(seconds):
-        for i in range(seconds, 0, -1):
-            time.sleep(1)
-            print(f"\rToo many requests, retrying in {i-1} seconds...", end='')
+    def __wait(retry_after):
+        logging.info(f'Retrying in {retry_after} seconds...')
+        time.sleep(retry_after + 1) # Just to be safe
+        logging.info(f'Waited {retry_after} seconds.\n')
 
     @staticmethod
-    def __handle_error(response, backoff_time):
-        raise HTTPError(f'Request to {response.url} failed with status code {response.status_code}')
-
+    def __raise_http_error(response, retry_after):
+        raise CustomHTTPError(response)
+    
 
 class RequestHandler:
-    def __init__(self, api_key, url_builder, endpoints, debug):
+    def __init__(self, api_key, url_builder, endpoints, debug, expire_after=3600):
         self.api_key = api_key
         self.url_builder = url_builder
         self.endpoints = endpoints
         self.debug = debug
         self.session = requests.Session()
-
-    def make_request(self, endpoint, *args, query_params=None):
-        endpoint = self.endpoints[endpoint].format(*args)
+        requests_cache.install_cache('riot_api_cache', expire_after=expire_after)
+    
+    def make_request(self, endpoint, query_params=None):
         url = self.url_builder.build(endpoint, query_params=query_params)
         headers = {'X-Riot-Token': self.api_key}
 
@@ -124,8 +116,6 @@ class RequestHandler:
 
             if check_result:
                 return response.json()
-            elif check_result is False:
+            elif not check_result:
                 if self.debug: print(f'\nRetrying after 429 error: {str(response.status_code)}, \nurl : {url}, \nheaders : {headers}, \nresponse : {response.json()}')
                 continue
-            else:
-                raise HTTPError(f"Request to {url} failed with status code {response.status_code}", url, response.status_code)

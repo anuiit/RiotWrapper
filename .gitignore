@@ -1,3 +1,4 @@
 __pycache__/
 .github/
 main.py
+riot_api_cache.sqlite
