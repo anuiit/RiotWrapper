@@ -1,4 +1,4 @@
-from RequestHandler import RequestHandler, UrlBuilder
+from RequestHandler import RequestHandler
 
 # TODO
 
@@ -11,8 +11,6 @@ from RequestHandler import RequestHandler, UrlBuilder
 # Puisque region, key, url et requestHandler
 # serait gérés par la classe Api directement 
 
-
-
 class SummonerApi:
     ENDPOINTS = {
         'BY_ACCOUNT': '/lol/summoner/v4/summoners/by-account/{}',
@@ -21,11 +19,8 @@ class SummonerApi:
         'BY_ID': '/lol/summoner/v4/summoners/{}'
     }
     
-    def __init__(self, region, api_key, debug):
-        self.region = region
-        self.api_key = api_key
-        self.url_builder = UrlBuilder(region)
-        self.request_handler = RequestHandler(api_key, self.url_builder, self.ENDPOINTS, debug)
+    def __init__(self, region, api_key):
+        self.request_handler = RequestHandler(api_key, region, False)
 
     def by_account(self, encrypted_account_id):
         return self.request_handler.make_request(self.ENDPOINTS['BY_ACCOUNT'].format(encrypted_account_id))
@@ -38,5 +33,3 @@ class SummonerApi:
 
     def by_id(self, encrypted_summoner_id):
         return self.request_handler.make_request(self.ENDPOINTS['BY_ID'].format(encrypted_summoner_id))
-
-
