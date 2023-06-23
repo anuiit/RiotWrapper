@@ -1,6 +1,5 @@
-from RequestHandler import RequestHandler, UrlBuilder
+from RequestHandler import RequestHandler
 from datetime import datetime
-
 
 class MatchApi:
     ENDPOINTS = {
@@ -9,12 +8,8 @@ class MatchApi:
         'BY_PUUID_MATCHLIST': '/lol/match/v5/matches/by-puuid/{}/ids'
     }
 
-    def __init__(self, region, api_key, debug):
-        self.region = region
-        self.api_key = api_key
-        self.debug = debug
-        self.url_builder = UrlBuilder(region, use_platform=True)
-        self.request_handler = RequestHandler(api_key, self.url_builder, self.ENDPOINTS, debug)
+    def __init__(self, region, api_key):
+        self.request_handler = RequestHandler(api_key, region, True)
 
     def by_match_id(self, match_id):
         return self.request_handler.make_request(self.ENDPOINTS['BY_MATCH_ID'].format(match_id))
@@ -32,6 +27,7 @@ class MatchApi:
         start: int = None,
         count: int = None,
     ):
+        
         query_params = {k: v for k, v in locals().items() if v is not None}
 
         if startTime:
@@ -40,4 +36,3 @@ class MatchApi:
             query_params['endTime'] = int((datetime.now() - datetime.fromisoformat(query_params['startTime'])).total_seconds())
 
         return self.request_handler.make_request(self.ENDPOINTS['BY_PUUID_MATCHLIST'].format(puuid), query_params=query_params)
-
