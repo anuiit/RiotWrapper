@@ -23,12 +23,12 @@ class MatchApi:
         startTime: datetime = None,
         endTime: datetime = None,   
         queue: int = None,          # https://static.developer.riotgames.com/docs/lol/queues.json
-        type: str = 'ranked',       # ranked, normal, tourney, tutorial
-        start: int = None,
-        count: int = None,
+        type: str = None,       # ranked, normal, tourney, tutorial
+        start: int = 0,
+        count: int = 20,
     ):
         
-        query_params = {k: v for k, v in locals().items() if v is not None}
+        query_params = {k: v for k, v in locals().items() if v is not None and k != 'self' and k != 'puuid'}
 
         if startTime:
             query_params['startTime'] = int((datetime.now() - datetime.fromisoformat(query_params['startTime'])).total_seconds())
