@@ -29,8 +29,6 @@ class RequestHandler:
         self.max_retries = max_retries
         self.session = requests.Session()
         self.set_cache(expire_after)
-
-        self.retries = 0
     
     def set_cache(self, expire_after, cache_name='riot_api_cache'):
         requests_cache.install_cache(cache_name, expire_after=expire_after)
@@ -42,7 +40,8 @@ class RequestHandler:
         return base_url if not query_params else f'{base_url}?{urlencode(query_params)}'
 
     def make_request(self, endpoint, query_params=None):
-        url = self.build(self.region, endpoint, query_params=query_params)
+        self.retries = 0
+        url = self.build(self.region, endpoint, query_params)
         headers = {'X-Riot-Token': self.api_key}
 
         while self.retries < self.max_retries:
@@ -54,8 +53,12 @@ class RequestHandler:
             except requests.exceptions.RequestException as e:
                 RequestHandler.handle_error(e)
                 self.retries += 1
-                logging.info(f"Retrying request {self.retries}/{self.max_retries}")
+                logging.info(f"Retrying : {self.retries}/{self.max_retries}")
+        
+        logging.info("Max retries reached.")
+        return None
 
+    @staticmethod
     def handle_error(exception):
         if isinstance(exception, requests.exceptions.ConnectionError):
             logging.info("Unable to connect to the server:", str(exception))
