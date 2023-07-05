@@ -23,16 +23,16 @@ class MatchApi:
         startTime: datetime = None,
         endTime: datetime = None,   
         queue: int = None,          # https://static.developer.riotgames.com/docs/lol/queues.json
-        type: str = None,       # ranked, normal, tourney, tutorial
+        typeGame: str = None,       # ranked, normal, tourney, tutorial
         start: int = 0,
         count: int = 20,
     ):
-        
-        query_params = {k: v for k, v in locals().items() if v is not None and k != 'self' and k != 'puuid'}
+
+        query_params = {k: v for k, v in locals().items() if v is not None and k != 'self'}
 
         if startTime:
-            query_params['startTime'] = int((datetime.now() - datetime.fromisoformat(query_params['startTime'])).total_seconds())
+            startTime = int(datetime.now() - datetime.fromisoformat(startTime.total_seconds()))
         if endTime:
-            query_params['endTime'] = int((datetime.now() - datetime.fromisoformat(query_params['startTime'])).total_seconds())
+            endTime = int(datetime.now() - datetime.fromisoformat(endTime).total_seconds())
 
         return self.request_handler.make_request(self.ENDPOINTS['BY_PUUID_MATCHLIST'].format(puuid), query_params=query_params)
