@@ -3,8 +3,6 @@ from requests.exceptions import HTTPError
 import logging
 from urllib.parse import urlencode
 
-logging.basicConfig(level=logging.INFO)
-
 REGION_TO_PLATFORM = {
     'eun1': 'europe',
     'euw1': 'europe',
@@ -19,9 +17,12 @@ REGION_TO_PLATFORM = {
     'oc1': 'americas'
 }
 
+MAX_RETRIES = 3
+CACHE_NAME = 'riot_api_cache'
+EXPIRE_AFTER = 3600
 
 class RequestHandler:
-    def __init__(self, api_key, region, use_platform, expire_after=3600, max_retries=3):
+    def __init__(self, api_key, region, use_platform, expire_after=3600, max_retries=MAX_RETRIES):
         self.api_key = api_key
         self.region = region
         self.use_platform = use_platform
@@ -30,7 +31,7 @@ class RequestHandler:
         self.session = requests.Session()
         self.set_cache(expire_after)
     
-    def set_cache(self, expire_after, cache_name='riot_api_cache'):
+    def set_cache(self, expire_after, cache_name=CACHE_NAME):
         requests_cache.install_cache(cache_name, expire_after=expire_after)
 
     def build(self, region, endpoint, query_params=None):
