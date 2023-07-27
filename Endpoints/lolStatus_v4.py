@@ -1,4 +1,4 @@
-from RequestHandler import RequestHandler
+from ..RequestHandler import RequestHandler
 from datetime import datetime
 
 class LolStatusApi:

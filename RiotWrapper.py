@@ -1,11 +1,4 @@
-from Endpoints.summoner_v4 import SummonerApi
-from Endpoints.match_v5 import MatchApi
-from Endpoints.champion_v3 import ChampionApi
-from Endpoints.championMastery_v4 import ChampionMasteryApi
-from Endpoints.league_v4 import LeagueApi
-from Endpoints.spectator_v4 import SpectatorApi
-from Endpoints.leagueExp_v4 import LeagueExpApi
-from Endpoints.lolStatus_v4 import LolStatusApi
+from .Endpoints import *
 
 class RiotWrapper:
     def __init__(self, api_key, region):
@@ -13,14 +6,14 @@ class RiotWrapper:
         # self.api = Api(region, api_key)
         # self.summoner = SummonerApi()
 
-        self.summoner = SummonerApi(region, api_key)
-        self.match = MatchApi(region, api_key)
-        self.champion = ChampionApi(region, api_key)
-        self.mastery = ChampionMasteryApi(region, api_key)
-        self.league = LeagueApi(region, api_key)
-        self.spectator = SpectatorApi(region, api_key)
-        self.league_exp = LeagueExpApi(region, api_key)
-        self.lol_status = LolStatusApi(region, api_key)
+        self.summoner = summoner_v4.SummonerApi(region, api_key)
+        self.match = match_v5.MatchApi(region, api_key)
+        self.champion = champion_v3.ChampionApi(region, api_key)
+        self.mastery = championMastery_v4.ChampionMasteryApi(region, api_key)
+        self.league = league_v4.LeagueApi(region, api_key)
+        self.spectator = spectator_v4.SpectatorApi(region, api_key)
+        self.league_exp = leagueExp_v4.LeagueExpApi(region, api_key)
+        self.lol_status = lolStatus_v4.LolStatusApi(region, api_key)
         
     # get winrate ?
     # general functions to get stats ?
