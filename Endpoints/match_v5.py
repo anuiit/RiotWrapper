@@ -11,7 +11,7 @@ class MatchApi:
     def __init__(self, region, api_key):
         self.request_handler = RequestHandler(api_key, region, True)
 
-    def by_match_id(self, match_id):
+    def by_match_id(self, match_id): # Example of match_id : EUW1_6333379226
         return self.request_handler.make_request(self.ENDPOINTS['BY_MATCH_ID'].format(match_id))
 
     def by_match_id_timeline(self, match_id):
