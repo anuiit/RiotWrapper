@@ -12,7 +12,7 @@ class ChampionMasteryApi:
     def __init__(self, region, api_key):
         self.request_handler = RequestHandler(api_key, region, False)
 
-    def champion_rotation(self, summoner_id):
+    def by_summoner(self, summoner_id):
         return self.request_handler.make_request(self.ENDPOINTS['BY_SUMMONER'].format(summoner_id))
     
     def champ_mastery(self, summoner_id, champion_id):
