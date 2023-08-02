@@ -18,7 +18,6 @@ class LeagueApi:
         return self.request_handler.make_request(self.ENDPOINTS['BY_CHALL_QUEUE'].format(queue))
     
     def summoner(self, summoner_id):
-        print(self.ENDPOINTS['BY_SUMMONER'].format(summoner_id))
         return self.request_handler.make_request(self.ENDPOINTS['BY_SUMMONER'].format(summoner_id))
     
     def league_entries(self, queue,      # queue = RANKED_SOLO_5x5, RANKED_FLEX_SR, RANKED_FLEX_TT
